@@ -1,0 +1,6 @@
+[requires]
+particle-common/snapshot@jw3/stable
+feather-oled/snapshot@jw3/stable
+
+[generators]
+cmake
