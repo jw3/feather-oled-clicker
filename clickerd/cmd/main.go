@@ -110,7 +110,11 @@ func main() {
 
 		// X=id
 		case strings.HasPrefix(e, "X="):
-			id, _ := strconv.ParseInt(strings.TrimPrefix(e, "X="), 10, 8)
+			id, _ := strconv.Atoi(strings.TrimPrefix(e, "X="))
+			if !(id < len(cfg.Items)) {
+				log.Printf("selected index out of bounds: %v", id)
+				break
+			}
 
 			log.Printf("selected index %v", id)
 			item := cfg.Items[id]
