@@ -95,10 +95,11 @@ func main() {
 	log.Println("done!")
 
 	// send list of items
-	for i, it := range cfg.Items {
-		println(i, it.Title)
-		toSerialCh <- fmt.Sprintf("%v. %v", i, it.Title)
+	for _, it := range cfg.Items {
+		log.Printf("sending model: %v", it.Title)
+		toSerialCh <- fmt.Sprintf("%v", it.Title)
 	}
+	toSerialCh <- "READY"
 
 	var last *Item = new(Item)
 
