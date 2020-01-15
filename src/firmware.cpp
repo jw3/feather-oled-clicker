@@ -56,7 +56,7 @@ void loop() {
             Serial.println("HELLO");
             ackd = true;
          }
-         else if (ackd && !initd) {
+         else if(ackd && !initd) {
             if(s == "READY") {
                tft.println("!");
                tft.println("click to begin");
@@ -79,12 +79,13 @@ void loop() {
    }
 
    if(initd) {
+      // clicked
       if(digitalRead(SwitchPin) == LOW) {
          Log.info("CLICKED!");
          tft.print("!");
          tft.display();
 
-         auto idx = encoderIdx % clicklist.size();
+         auto idx = encoderIdx / 2 % clicklist.size();
          if(idx < 0) idx += clicklist.size();
          Serial.printlnf("X=%i", idx);
       }
@@ -95,15 +96,16 @@ void loop() {
             ++encoderIdx;
          else --encoderIdx;
 
-         auto idx = encoderIdx % clicklist.size();
-         if(idx < 0) idx += clicklist.size();
+         if(!(encoderIdx % 2)) {
+            auto idx = encoderIdx / 2 % clicklist.size();
+            if(idx < 0) idx += clicklist.size();
 
-         tft.clearDisplay();
-         tft.setCursor(0, 0);
-         tft.print(clicklist.at(idx).c_str());
-         tft.printf(" %i", encoderIdx);
-         Log.info("turned to index: %li", encoderIdx);
-         tft.display();
+            tft.clearDisplay();
+            tft.setCursor(0, 0);
+            tft.printlnf("%i. %s %i", idx + 1, clicklist.at(idx).c_str(), encoderIdx);
+//            Log.info("turned to index: %li", encoderIdx);
+            tft.display();
+         }
       }
       vclkPrev = vclk;
    }
