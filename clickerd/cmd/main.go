@@ -121,14 +121,15 @@ func main() {
 			binary, _ := exec.LookPath(cfg.Command)
 
 			for _, m := range item.Modules {
-				args := []string{m.Id, m.Model}
+				prev := "{}"
 				for i := range last.Modules {
 					// look for the previous model and send it over
 					if last.Modules[i].Id == m.Id {
-						args = append(args, last.Modules[i].Model)
+						prev = last.Modules[i].Model
 						break
 					}
 				}
+				args := []string{m.Id, prev, m.Model}
 
 				print(cfg.Command)
 				print(" ")
