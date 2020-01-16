@@ -39,6 +39,7 @@ long last = 0;
 std::array<char, 1024> buffer = {};
 bool ackd = false;
 bool initd = false;
+long last_click = 0;
 void loop() {
    while(Serial.available()) {
       auto c = Serial.read();
@@ -80,7 +81,7 @@ void loop() {
 
    if(initd) {
       // clicked
-      if(digitalRead(SwitchPin) == LOW) {
+      if(digitalRead(SwitchPin) == LOW && millis() - last_click > 500) {
          Log.info("CLICKED!");
          tft.print("!");
          tft.display();
@@ -88,6 +89,8 @@ void loop() {
          auto idx = encoderIdx / 2 % clicklist.size();
          if(idx < 0) idx += clicklist.size();
          Serial.printlnf("X=%i", idx);
+
+         last_click = millis();
       }
 
       const auto vclk = digitalRead(ClockPin);
