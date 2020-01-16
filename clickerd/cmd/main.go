@@ -147,6 +147,8 @@ func main() {
 				e := cmd.Run()
 				if e != nil {
 					log.Printf("failed to run command: %v", e)
+					log.Println(out.String())
+					log.Println(stderr.String())
 				}
 			}
 
