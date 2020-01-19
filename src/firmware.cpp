@@ -1,5 +1,7 @@
 #include <Particle.h>
 #include <Adafruit_SSD1306.h>
+#include <Debounce.h>
+
 #include <vector>
 #include <functional>
 
@@ -14,6 +16,8 @@ int32_t encoderIdx = 0;
 
 SerialLogHandler logHandler;
 std::vector<std::string> clicklist;
+
+Debounce clicker = Debounce();
 
 Adafruit_SSD1306 tft(128, 32);
 void setup() {
@@ -30,7 +34,10 @@ void setup() {
 
    pinMode(DataPin, INPUT);
    pinMode(ClockPin, INPUT);
+
    pinMode(SwitchPin, INPUT);
+   clicker.attach(SwitchPin);
+   clicker.interval(20);
 
    vclkPrev = digitalRead(ClockPin);
 }
@@ -82,18 +89,26 @@ void loop() {
    }
 
    if(initd) {
-      // clicked
-      if(digitalRead(SwitchPin) == LOW && millis() - last_click > 500) {
-         tft.print("!");
+      clicker.update();
+
+      // clicker -------------------
+      auto t = millis();
+      if(clicker.rose()) {
+         tft.print("#");
          tft.display();
-         //Log.info("clicked");
+         if(t - last_click < 750) {
+            // double click
+            tft.print("!");
+            tft.display();
+            //Log.info("clicked");
 
-         auto idx = encoderIdx / 2 % clicklist.size();
-         if(idx < 0) idx += clicklist.size();
-         Serial.printlnf("X=%i", idx);
-
-         last_click = millis();
+            auto idx = encoderIdx / 2 % clicklist.size();
+            if(idx < 0) idx += clicklist.size();
+            Serial.printlnf("X=%i", idx);
+         }
+         last_click = t;
       }
+      // ---------------------------
 
       const auto vclk = digitalRead(ClockPin);
       if(vclk != vclkPrev) {
