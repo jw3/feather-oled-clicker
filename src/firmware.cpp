@@ -94,17 +94,13 @@ void loop() {
       // clicker -------------------
       auto t = millis();
       if(clicker.rose()) {
-         tft.print("#");
-         tft.display();
          if(t - last_click < 750) {
             // double click
-            tft.print("!");
-            tft.display();
-            //Log.info("clicked");
-
             auto idx = encoderIdx / 2 % clicklist.size();
             if(idx < 0) idx += clicklist.size();
             Serial.printlnf("X=%i", idx);
+            tft.print("!!");
+            tft.display();
          }
          last_click = t;
       }
