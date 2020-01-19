@@ -75,8 +75,9 @@ func main() {
 	}()
 
 	// read def file
+	// todo;; externalize this in env or arg
 	cfg := Cfg{}
-	cfgf, e := ioutil.ReadFile(".local/clickerd.conf")
+	cfgf, e := ioutil.ReadFile("/usr/local/etc/clickerd.conf")
 	if e != nil {
 		log.Fatalf("failed to read configuration: %v", e)
 	}
