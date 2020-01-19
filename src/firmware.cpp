@@ -23,9 +23,9 @@ void setup() {
 
    tft.clearDisplay();
    tft.setTextColor(WHITE);
-   tft.setTextSize(1);
+   tft.setTextSize(2);
    tft.setCursor(0, 0);
-   tft.print("initializing");
+   tft.print("connecting");
    tft.display();
 
    pinMode(DataPin, INPUT);
@@ -59,8 +59,10 @@ void loop() {
          }
          else if(ackd && !initd) {
             if(s == "READY") {
-               tft.println("!");
-               tft.println("click to begin");
+               tft.clearDisplay();
+               tft.setCursor(0, 0);
+               if(clicklist.empty()) tft.println("No models");
+               else tft.printlnf(" 1. %s", clicklist.front().c_str());
                tft.display();
 
                initd = true;
@@ -82,9 +84,9 @@ void loop() {
    if(initd) {
       // clicked
       if(digitalRead(SwitchPin) == LOW && millis() - last_click > 500) {
-         Log.info("CLICKED!");
          tft.print("!");
          tft.display();
+         //Log.info("clicked");
 
          auto idx = encoderIdx / 2 % clicklist.size();
          if(idx < 0) idx += clicklist.size();
@@ -105,7 +107,7 @@ void loop() {
 
             tft.clearDisplay();
             tft.setCursor(0, 0);
-            tft.printlnf("%i. %s %i", idx + 1, clicklist.at(idx).c_str(), encoderIdx);
+            tft.printlnf("%2i. %s", idx + 1, clicklist.at(idx).c_str());
 //            Log.info("turned to index: %li", encoderIdx);
             tft.display();
          }
