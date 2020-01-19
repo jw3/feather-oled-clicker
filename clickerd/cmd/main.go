@@ -19,7 +19,6 @@ type Cfg struct {
 }
 
 type Item struct {
-	Id      string
 	Title   string
 	Modules [] struct {
 		Id    string
@@ -58,7 +57,9 @@ func main() {
 				}
 
 				for _, s := range splits {
-					fromSerialCh <- s
+					if len(s) > 0 {
+						fromSerialCh <- s
+					}
 				}
 			}
 		}
@@ -117,9 +118,15 @@ func main() {
 				break
 			}
 
-			log.Printf("selected index %v", id)
 			item := cfg.Items[id]
-			binary, _ := exec.LookPath(cfg.Command)
+			log.Printf("selected model: %v", item.Title)
+
+			binary, binEx := exec.LookPath(cfg.Command)
+			if binEx != nil {
+				log.Printf("command not found: %v", binEx)
+				break
+			}
+
 
 			for _, m := range item.Modules {
 				prev := "{}"
