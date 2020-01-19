@@ -48,6 +48,7 @@ std::array<char, 1024> buffer = {};
 bool ackd = false;
 bool initd = false;
 long last_click = 0;
+long last_dblclick = 0;
 void loop() {
    while(Serial.available()) {
       auto c = Serial.read();
@@ -80,12 +81,8 @@ void loop() {
                clicklist.push_back(s);
                tft.print(".");
                tft.display();
-               Log.info("adding model");
             }
          }
-//         else {
-//            Serial.printlnf("data[%i]: %s", s.length(), s.c_str());
-//         }
       }
    }
 
@@ -95,13 +92,15 @@ void loop() {
       // clicker -------------------
       auto t = millis();
       if(clicker.rose()) {
-         if(t - last_click < 750) {
+         if(t - last_click < 750 && t - last_dblclick > 2000) {
             // double click
             auto idx = encoderIdx / 2 % clicklist.size();
             if(idx < 0) idx += clicklist.size();
             Serial.printlnf("X=%i", idx);
             tft.print("!!");
             tft.display();
+
+            last_dblclick = t;
          }
          last_click = t;
       }
