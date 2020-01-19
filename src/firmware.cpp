@@ -12,6 +12,7 @@ const uint16_t ClockPin = D8;
 const uint16_t SwitchPin = D7;
 
 int32_t vclkPrev = 0;
+int32_t menuIdx = 0;
 int32_t encoderIdx = 0;
 
 SerialLogHandler logHandler;
@@ -113,13 +114,12 @@ void loop() {
          else --encoderIdx;
 
          if(!(encoderIdx % 2)) {
-            auto idx = encoderIdx / 2 % clicklist.size();
-            if(idx < 0) idx += clicklist.size();
+            menuIdx = encoderIdx / 2 % clicklist.size();
+            if(menuIdx< 0) menuIdx += clicklist.size();
 
             tft.clearDisplay();
             tft.setCursor(0, 0);
-            tft.printlnf("%2i. %s", idx + 1, clicklist.at(idx).c_str());
-//            Log.info("turned to index: %li", encoderIdx);
+            tft.printf("%2i. %s", menuIdx + 1, clicklist.at(menuIdx).c_str());
             tft.display();
          }
       }
