@@ -89,23 +89,6 @@ void loop() {
    if(initd) {
       clicker.update();
 
-      // clicker -------------------
-      auto t = millis();
-      if(clicker.rose()) {
-         if(t - last_click < 750 && t - last_dblclick > 2000) {
-            // double click
-            auto idx = encoderIdx / 2 % clicklist.size();
-            if(idx < 0) idx += clicklist.size();
-            Serial.printlnf("X=%i", idx);
-            tft.print("!!");
-            tft.display();
-
-            last_dblclick = t;
-         }
-         last_click = t;
-      }
-      // ---------------------------
-
       const auto vclk = digitalRead(ClockPin);
       if(vclk != vclkPrev) {
          if(digitalRead(DataPin) != vclk)
@@ -123,5 +106,22 @@ void loop() {
          }
       }
       vclkPrev = vclk;
+
+      // clicker -------------------
+      auto t = millis();
+      if(clicker.rose()) {
+         if(t - last_click < 750 && t - last_dblclick > 2000) {
+            // double click
+            auto idx = encoderIdx / 2 % clicklist.size();
+            if(idx < 0) idx += clicklist.size();
+            Serial.printlnf("X=%i", idx);
+            tft.print("!!");
+            tft.display();
+
+            last_dblclick = t;
+         }
+         last_click = t;
+      }
+      // ---------------------------
    }
 }
