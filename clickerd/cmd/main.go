@@ -54,6 +54,9 @@ func main() {
 				if !strings.HasSuffix(buf, "\r\n") {
 					buf = splits[len(splits)-1 ]
 					splits = splits[:len(splits)-1]
+				} else {
+					// clear the buffer, it was fully consumed in splits
+					buf = ""
 				}
 
 				for _, s := range splits {
