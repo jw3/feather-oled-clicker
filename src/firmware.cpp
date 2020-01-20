@@ -15,7 +15,6 @@ int32_t vclkPrev = 0;
 int32_t menuIdx = 0;
 int32_t encoderIdx = 0;
 
-SerialLogHandler logHandler;
 std::vector<std::string> clicklist;
 
 Debounce clicker = Debounce();
