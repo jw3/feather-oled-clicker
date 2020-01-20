@@ -1,0 +1,11 @@
+[Unit]
+Description=Clicker Daemon
+
+[Service]
+Type=oneshot
+RemainAfterExit=no
+ExecStartPre=/bin/sleep 3
+ExecStart=/usr/local/bin/clickerd
+
+[Install]
+WantedBy=multi-user.target
