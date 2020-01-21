@@ -50,16 +50,13 @@ bool initd = false;
 long last_click = 0;
 long last_dblclick = 0;
 long last_dblclick_idx = -1;
+
 void loop() {
    while(Serial.available()) {
       auto c = Serial.read();
       if(c != '\n') buffer[last++] = c;
       else if(last) {
          std::string s(buffer.data(), last);
-
-//         tft.printf("%s", s.c_str());
-//         tft.display();
-
          buffer = {};
          last = 0;
 
@@ -88,10 +85,9 @@ void loop() {
    }
 
    if(initd) {
-      clicker.update();
+      // encoder -------------------
       state = (state << 1) | digitalRead(ClockPin) | 0xe000;
-
-      if (state==0xf000){
+      if(state == 0xf000) {
          if(digitalRead(DataPin))
             ++encoderIdx;
          else --encoderIdx;
@@ -106,8 +102,11 @@ void loop() {
             tft.drawBitmap(110, 15, ClickedIcon, 18, 18, 1);
          tft.display();
       }
+      // encoder -------------------
+
 
       // clicker -------------------
+      clicker.update();
       auto t = millis();
       if(clicker.rose()) {
          if(t - last_click < 750 && t - last_dblclick > 2000) {
