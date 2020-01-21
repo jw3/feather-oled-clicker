@@ -106,8 +106,6 @@ func main() {
 	}
 	toSerialCh <- "READY"
 
-	var last *Item = new(Item)
-
 	// listen for selections
 	for {
 		e := <-fromSerialCh
@@ -132,15 +130,7 @@ func main() {
 
 
 			for _, m := range item.Modules {
-				prev := "{}"
-				for i := range last.Modules {
-					// look for the previous model and send it over
-					if last.Modules[i].Id == m.Id {
-						prev = last.Modules[i].Model
-						break
-					}
-				}
-				args := []string{m.Id, prev, m.Model}
+				args := []string{m.Id, m.Model}
 
 				print(cfg.Command)
 				print(" ")
@@ -163,8 +153,6 @@ func main() {
 					log.Println(stderr.String())
 				}
 			}
-
-			last = &item
 		}
 	}
 }
