@@ -11,9 +11,9 @@ const uint16_t DataPin = D6;
 const uint16_t ClockPin = D8;
 const uint16_t SwitchPin = D7;
 
-int32_t vclkPrev = 0;
-int32_t menuIdx = 0;
-int32_t encoderIdx = 0;
+uint16_t state = 0;
+uint16_t menuIdx = 0;
+uint16_t encoderIdx = 0;
 
 std::vector<std::string> clicklist;
 
@@ -38,8 +38,6 @@ void setup() {
    pinMode(SwitchPin, INPUT);
    clicker.attach(SwitchPin);
    clicker.interval(20);
-
-   vclkPrev = digitalRead(ClockPin);
 }
 
 long last = 0;
@@ -87,24 +85,21 @@ void loop() {
 
    if(initd) {
       clicker.update();
+      state = (state << 1) | digitalRead(ClockPin) | 0xe000;
 
-      const auto vclk = digitalRead(ClockPin);
-      if(vclk != vclkPrev) {
-         if(digitalRead(DataPin) != vclk)
+      if (state==0xf000){
+         if(digitalRead(DataPin))
             ++encoderIdx;
          else --encoderIdx;
 
-         if(!(encoderIdx % 2)) {
-            menuIdx = encoderIdx / 2 % clicklist.size();
-            if(menuIdx< 0) menuIdx += clicklist.size();
+         state = 0;
+         menuIdx = encoderIdx % clicklist.size();
 
-            tft.clearDisplay();
-            tft.setCursor(0, 0);
-            tft.printf("%2i. %s", menuIdx + 1, clicklist.at(menuIdx).c_str());
-            tft.display();
-         }
+         tft.clearDisplay();
+         tft.setCursor(0, 0);
+         tft.printf("%2i. %s", menuIdx + 1, clicklist.at(menuIdx).c_str());
+         tft.display();
       }
-      vclkPrev = vclk;
 
       // clicker -------------------
       auto t = millis();
