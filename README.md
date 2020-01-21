@@ -11,4 +11,5 @@ clicks
 
 
 ### reference
+- https://www.best-microcontroller-projects.com/rotary-encoder.html
 - http://henrysbench.capnfatz.com/henrys-bench/arduino-sensors-and-input/keyes-ky-040-arduino-rotary-encoder-user-manual/
