@@ -131,14 +131,7 @@ func main() {
 
 			for _, m := range item.Modules {
 				args := []string{m.Id, m.Model}
-
-				print(cfg.Command)
-				print(" ")
-				for i := range args {
-					print(args[i])
-					print(" ")
-				}
-				println()
+				log.Printf("%v %v %v", cfg.Command, m.Id, m.Model)
 
 				cmd := exec.Command(binary, args...)
 				var out bytes.Buffer
