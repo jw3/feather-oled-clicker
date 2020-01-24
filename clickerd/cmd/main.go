@@ -1,6 +1,7 @@
 package main
 
 import (
+	. "../common"
 	"bytes"
 	"fmt"
 	"github.com/go-yaml/yaml"
@@ -11,20 +12,6 @@ import (
 	"strconv"
 	"strings"
 )
-
-type Cfg struct {
-	Command     string
-	Items       [] Item
-	Concurrency int
-}
-
-type Item struct {
-	Title   string
-	Modules [] struct {
-		Id    string
-		Model string
-	}
-}
 
 func main() {
 	log.Println("starting clickerd")
