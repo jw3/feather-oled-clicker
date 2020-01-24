@@ -20,8 +20,8 @@ DOCKER_PUSH?=true
 IMAGE_NAMESPACE?=jwiii
 IMAGE_TAG?=latest
 GOARCH?=amd64
-CGO_ENABLED=0
-GOOS=linux
+CGO_ENABLED?=0
+GOOS?=linux
 
 ifeq (${DOCKER_PUSH},true)
 ifndef IMAGE_NAMESPACE
@@ -43,20 +43,24 @@ export GOARM=7
 endif
 
 .DELETE_ON_ERROR:
-all: clickerd clicker-cli
+all: clickerd cli
 
 all-images: clickerd-image
 
-.PHONY: all clean
+.PHONY: all clean clickerd cli
 
 clickerd:
 	env | grep GO
 	go build -v -ldflags '${LDFLAGS}' -o ${DIST_DIR}/clickerd ./cmd/main.go
 
-clicker-cli:
+cli:
 	env | grep GO
 	go build -v -ldflags '${LDFLAGS}' -o ${DIST_DIR}/clicker ./cli/main.go
 
 clickerd-image:
 	docker build -t $(IMAGE_PREFIX)clickerd:$(IMAGE_TAG) -f ./servers/cmd/Dockerfile .
 	@if [ "$(DOCKER_PUSH)" = "true" ] ; then  docker push $(IMAGE_PREFIX)clickerd:$(IMAGE_TAG) ; fi
+
+clean:
+	@if [ -f ${DIST_DIR}/clicker ] ; then rm -v ${DIST_DIR}/clicker ; fi
+	@if [ -f ${DIST_DIR}/clickerd ] ; then rm -v ${DIST_DIR}/clickerd ; fi
