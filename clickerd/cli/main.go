@@ -2,14 +2,14 @@ package main
 
 import (
 	. "../common"
-	"bytes"
 	"fmt"
 	"github.com/go-yaml/yaml"
 	"github.com/urfave/cli"
 	"io/ioutil"
 	"log"
+	"net/http"
+	"net/url"
 	"os"
-	"os/exec"
 	"strconv"
 )
 
@@ -51,7 +51,7 @@ func main() {
 
 func parseClickerConf() (Cfg, error) {
 	cfg := Cfg{}
-	json, e := ioutil.ReadFile("/home/wassj/dev/code/jw3/feather-oled-clicker/clickerd/.local/clickerd.conf")
+	json, e := ioutil.ReadFile("./clickerd.conf")
 	if e == nil {
 		e = yaml.UnmarshalStrict(json, &cfg)
 	}
@@ -120,29 +120,29 @@ func click(c *cli.Context) error {
 	item := cfg.Items[id]
 	log.Printf("selected model: %v", item.Title)
 
-	binary, binEx := exec.LookPath(cfg.Command)
-	if binEx != nil {
-		log.Printf("item command not found: %v", binEx)
-		return e
-	}
+	return call(&item)
+}
 
+func call(item *Item) error {
 	for _, m := range item.Modules {
-		args := []string{m.Id, m.Model}
-		log.Printf("%v %v %v", cfg.Command, m.Id, m.Model)
+		uri := fmt.Sprintf("http://%s/devices/%s/", "localhost:9000/v1", m.Id)
 
-		cmd := exec.Command(binary, args...)
-		var out bytes.Buffer
-		var stderr bytes.Buffer
-		cmd.Stdout = &out
-		cmd.Stderr = &stderr
+		if _, e := http.PostForm(uri + "cancel", url.Values{}); e != nil {
+			log.Printf( "cancel failed for %v", m.Id)
+			return e
+		}
 
-		e := cmd.Run()
-		if e != nil {
-			log.Printf("failed to run command: %v", e)
-			log.Println(out.String())
-			log.Println(stderr.String())
+		v := url.Values{}
+		v.Set("args", m.Model)
+		if _, e := http.PostForm(uri + "addNodes", v); e != nil {
+			log.Printf( "cancel failed for %v", m.Id)
+			return e
+		}
+
+		if _, e := http.PostForm(uri + "align", url.Values{}); e != nil {
+			log.Printf( "cancel failed for %v", m.Id)
+			return e
 		}
 	}
-
 	return nil
 }
