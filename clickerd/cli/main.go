@@ -13,33 +13,60 @@ import (
 	"strconv"
 )
 
+var cloudHost string
+var cloudPort int
+var configFile string
+
 func main() {
 	app := cli.NewApp()
+
+	app.Flags = []cli.Flag{
+		&cli.PathFlag{
+			Name:        "config",
+			Value:       "clickerd.conf",
+			Usage:       "Clickerd config file",
+			Aliases:     []string{"c"},
+			Destination: &configFile,
+		},
+	}
 
 	app.Commands = []*cli.Command{
 		{
 			Name:        "list",
 			Usage:       "List items",
-			UsageText:   "clicker list [options]",
+			UsageText:   "clicker list",
 			Description: "List all available items.",
-			ArgsUsage:   "[options]",
+			Aliases:     []string{"ls"},
 			Action:      list,
 		},
 		{
 			Name:        "show",
 			Usage:       "Show Item",
-			UsageText:   "clicker show [options]",
+			UsageText:   "clicker show <item-id>",
 			Description: "Show model of item.",
-			ArgsUsage:   "[options]",
 			Action:      show,
 		},
 		{
 			Name:        "click",
 			Usage:       "Click an item",
-			UsageText:   "clicker click [options] <item-id>",
+			UsageText:   "clicker click <item-id>",
 			Description: "Click an item.",
-			ArgsUsage:   "[options] <item-id>",
-			Action:      click,
+			Flags: []cli.Flag{
+				&cli.StringFlag{
+					Name:        "cloud-host",
+					Value:       "192.168.2.1",
+					Usage:       "Cloud API Server Host",
+					Aliases:     []string{"H"},
+					Destination: &cloudHost,
+				},
+				&cli.IntFlag{
+					Name:        "cloud-port",
+					Value:       9000,
+					Usage:       "Cloud API Server Port",
+					Aliases:     []string{"P"},
+					Destination: &cloudPort,
+				}},
+			Action: click,
 		},
 	}
 
@@ -51,7 +78,7 @@ func main() {
 
 func parseClickerConf() (Cfg, error) {
 	cfg := Cfg{}
-	json, e := ioutil.ReadFile("./clickerd.conf")
+	json, e := ioutil.ReadFile(configFile)
 	if e == nil {
 		e = yaml.UnmarshalStrict(json, &cfg)
 	}
@@ -66,7 +93,7 @@ func list(c *cli.Context) error {
 	}
 
 	for idx, item := range cfg.Items {
-		fmt.Printf("\t%v. %v\n", idx + 1, item.Title)
+		fmt.Printf("\t%v. %v\n", idx+1, item.Title)
 	}
 
 	return nil
@@ -91,7 +118,7 @@ func show(c *cli.Context) error {
 	}
 
 	item := cfg.Items[id]
-	fmt.Printf("\t%v. %v\n", id + 1, item.Title)
+	fmt.Printf("\t%v. %v\n", id+1, item.Title)
 	for _, m := range item.Modules {
 		fmt.Printf("\tid: %v\n", m.Id)
 		fmt.Printf("\t    %v\n", m.Model)
@@ -125,22 +152,22 @@ func click(c *cli.Context) error {
 
 func call(item *Item) error {
 	for _, m := range item.Modules {
-		uri := fmt.Sprintf("http://%s/devices/%s/", "localhost:9000/v1", m.Id)
+		uri := fmt.Sprintf("http://%s:%v/v1/devices/%s/", cloudHost, cloudPort, m.Id)
 
-		if _, e := http.PostForm(uri + "cancel", url.Values{}); e != nil {
-			log.Printf( "cancel failed for %v", m.Id)
+		if _, e := http.PostForm(uri+"cancel", url.Values{}); e != nil {
+			log.Printf("cancel failed for %v", m.Id)
 			return e
 		}
 
 		v := url.Values{}
 		v.Set("args", m.Model)
-		if _, e := http.PostForm(uri + "addNodes", v); e != nil {
-			log.Printf( "cancel failed for %v", m.Id)
+		if _, e := http.PostForm(uri+"addNodes", v); e != nil {
+			log.Printf("cancel failed for %v", m.Id)
 			return e
 		}
 
-		if _, e := http.PostForm(uri + "align", url.Values{}); e != nil {
-			log.Printf( "cancel failed for %v", m.Id)
+		if _, e := http.PostForm(uri+"align", url.Values{}); e != nil {
+			log.Printf("cancel failed for %v", m.Id)
 			return e
 		}
 	}
