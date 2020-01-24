@@ -42,18 +42,20 @@ ifeq (${GOARCH},arm)
 export GOARM=7
 endif
 
-# Build the project images
 .DELETE_ON_ERROR:
-all: clickerd
+all: clickerd clicker-cli
 
 all-images: clickerd-image
 
 .PHONY: all clean
 
-# private cloud server
 clickerd:
 	env | grep GO
 	go build -v -ldflags '${LDFLAGS}' -o ${DIST_DIR}/clickerd ./cmd/main.go
+
+clicker-cli:
+	env | grep GO
+	go build -v -ldflags '${LDFLAGS}' -o ${DIST_DIR}/clicker ./cli/main.go
 
 clickerd-image:
 	docker build -t $(IMAGE_PREFIX)clickerd:$(IMAGE_TAG) -f ./servers/cmd/Dockerfile .
