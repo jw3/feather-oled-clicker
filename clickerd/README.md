@@ -22,4 +22,5 @@ items:
 ### reference
 - https://www.pcsuggest.com/run-shell-scripts-from-udev-rules/
 - https://coreos.com/os/docs/latest/using-systemd-and-udev-rules.html
+- https://www.linode.com/docs/quick-answers/linux/start-service-at-boot/
 - http://henrysbench.capnfatz.com/henrys-bench/arduino-sensors-and-input/keyes-ky-040-arduino-rotary-encoder-user-manual/
