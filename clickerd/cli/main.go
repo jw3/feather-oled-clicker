@@ -139,12 +139,13 @@ func click(c *cli.Context) error {
 		return e
 	}
 
-	if !(id < len(cfg.Items)) {
-		log.Printf("selected item id is out of bounds: %v", id)
+	iid := id - 1
+	if !(iid < len(cfg.Items)) {
+		log.Printf("selected item id is out of bounds: %v", iid)
 		return e
 	}
 
-	item := cfg.Items[id]
+	item := cfg.Items[iid]
 	log.Printf("selected model: %v", item.Title)
 
 	return call(&item)
@@ -162,12 +163,12 @@ func call(item *Item) error {
 		v := url.Values{}
 		v.Set("args", m.Model)
 		if _, e := http.PostForm(uri+"addNodes", v); e != nil {
-			log.Printf("cancel failed for %v", m.Id)
+			log.Printf("addNodes failed for %v", m.Id)
 			return e
 		}
 
 		if _, e := http.PostForm(uri+"align", url.Values{}); e != nil {
-			log.Printf("cancel failed for %v", m.Id)
+			log.Printf("align failed for %v", m.Id)
 			return e
 		}
 	}
