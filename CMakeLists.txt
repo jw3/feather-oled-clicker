@@ -30,5 +30,6 @@ set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake ${CONAN_CMAKE_MODULE_PATH} ${CMA
 
 find_package(Particle)
 include(oled)
+include(Debounce)
 
-add_particle_remote_app(src oled)
+add_particle_remote_app(src oled Debounce)
