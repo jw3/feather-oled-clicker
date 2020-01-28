@@ -35,7 +35,7 @@ void setup() {
    tft.print("connecting");
    tft.display();
 
-   pinMode(DataPin, INPUT);
+   pinMode(DataPin, INPUT_PULLUP);
    pinMode(ClockPin, INPUT);
 
    pinMode(SwitchPin, INPUT);
