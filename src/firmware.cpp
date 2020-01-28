@@ -86,10 +86,12 @@ void loop() {
 
    if(initd) {
       // encoder -------------------
-      state = (state << 1) | digitalRead(ClockPin) | 0xe000;
+      auto c = digitalRead(ClockPin);
+      auto d = digitalRead(DataPin);
+      state = (state << 1) | c | 0xe000;
+
       if(state == 0xf000) {
-         if(digitalRead(DataPin))
-            ++encoderIdx;
+         if(d) ++encoderIdx;
          else --encoderIdx;
 
          state = 0;
