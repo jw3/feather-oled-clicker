@@ -1,0 +1,9 @@
+[Unit]
+Description=Clicker HTTP
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/clicker-http
+
+[Install]
+WantedBy=multi-user.target

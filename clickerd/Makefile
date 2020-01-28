@@ -43,11 +43,11 @@ export GOARM=7
 endif
 
 .DELETE_ON_ERROR:
-all: clickerd cli
+all: clickerd cli clicker-http
 
 all-images: clickerd-image
 
-.PHONY: all clean clickerd cli
+.PHONY: all clean clickerd cli clicker-http
 
 clickerd:
 	env | grep GO
@@ -55,12 +55,16 @@ clickerd:
 
 cli:
 	env | grep GO
-	go build -v -ldflags '${LDFLAGS}' -o ${DIST_DIR}/clicker ./cli/main.go
+	go build -v -ldflags '${LDFLAGS}' -o ${DIST_DIR}/clicker.${GOOS}.${GOARCH} ./cli/main.go
+
+clicker-http:
+	env | grep GO
+	go build -v -ldflags '${LDFLAGS}' -o ${DIST_DIR}/clicker-http.${GOOS}.${GOARCH} ./http/main.go
 
 clickerd-image:
 	docker build -t $(IMAGE_PREFIX)clickerd:$(IMAGE_TAG) -f ./servers/cmd/Dockerfile .
 	@if [ "$(DOCKER_PUSH)" = "true" ] ; then  docker push $(IMAGE_PREFIX)clickerd:$(IMAGE_TAG) ; fi
 
 clean:
-	@if [ -f ${DIST_DIR}/clicker ] ; then rm -v ${DIST_DIR}/clicker ; fi
-	@if [ -f ${DIST_DIR}/clickerd ] ; then rm -v ${DIST_DIR}/clickerd ; fi
+	@if [ -f ${DIST_DIR}/clicker* ] ; then rm -v ${DIST_DIR}/clicker* ; fi
+	@if [ -f ${DIST_DIR}/clickerd* ] ; then rm -v ${DIST_DIR}/clickerd* ; fi
