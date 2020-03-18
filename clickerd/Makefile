@@ -16,7 +16,7 @@ override LDFLAGS += \
   -X ${PACKAGE}.gitTreeState=${GIT_TREE_STATE}
 
 #  docker image publishing options
-DOCKER_PUSH?=true
+DOCKER_PUSH?=false
 IMAGE_NAMESPACE?=jwiii
 IMAGE_TAG?=latest
 GOARCH?=amd64
@@ -43,11 +43,11 @@ export GOARM=7
 endif
 
 .DELETE_ON_ERROR:
-all: clickerd cli clicker-http
+all: clickerd cli http
 
 all-images: clickerd-image
 
-.PHONY: all clean clickerd cli clicker-http
+.PHONY: all clean clickerd cli http
 
 clickerd:
 	env | grep GO
@@ -57,13 +57,13 @@ cli:
 	env | grep GO
 	go build -v -ldflags '${LDFLAGS}' -o ${DIST_DIR}/clicker.${GOOS}.${GOARCH} ./cli/main.go
 
-clicker-http:
+http:
 	env | grep GO
 	go build -v -ldflags '${LDFLAGS}' -o ${DIST_DIR}/clicker-http.${GOOS}.${GOARCH} ./http/main.go
 
-clickerd-image:
-	docker build -t $(IMAGE_PREFIX)clickerd:$(IMAGE_TAG) -f ./servers/cmd/Dockerfile .
-	@if [ "$(DOCKER_PUSH)" = "true" ] ; then  docker push $(IMAGE_PREFIX)clickerd:$(IMAGE_TAG) ; fi
+http-image: http
+	docker build -t $(IMAGE_PREFIX)clickerd-http:$(IMAGE_TAG) -f ./http/Dockerfile .
+	@if [ "$(DOCKER_PUSH)" = "true" ] ; then  docker push $(IMAGE_PREFIX)clickerd-http:$(IMAGE_TAG) ; fi
 
 clean:
 	@if [ -f ${DIST_DIR}/clicker* ] ; then rm -v ${DIST_DIR}/clicker* ; fi
