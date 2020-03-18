@@ -153,22 +153,14 @@ func click(c *cli.Context) error {
 
 func call(item *Item) error {
 	for _, m := range item.Modules {
-		uri := fmt.Sprintf("http://%s:%v/v1/devices/%s/", cloudHost, cloudPort, m.Id)
+		movementCommand := "move" // todo;; externalize
+		endpoint := fmt.Sprintf("http://%s:%v/v1/devices/%s/%s", cloudHost, cloudPort, m.Id, movementCommand)
 
-		if _, e := http.PostForm(uri+"cancel", url.Values{}); e != nil {
-			log.Printf("cancel failed for %v", m.Id)
-			return e
-		}
-
+		println(endpoint)
 		v := url.Values{}
 		v.Set("args", m.Model)
-		if _, e := http.PostForm(uri+"addNodes", v); e != nil {
-			log.Printf("addNodes failed for %v", m.Id)
-			return e
-		}
-
-		if _, e := http.PostForm(uri+"align", url.Values{}); e != nil {
-			log.Printf("align failed for %v", m.Id)
+		if _, e := http.PostForm(endpoint, v); e != nil {
+			log.Printf("move failed for %v", m.Id)
 			return e
 		}
 	}

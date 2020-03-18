@@ -4,7 +4,7 @@ import (
 	. "../common"
 	"fmt"
 	"github.com/go-yaml/yaml"
-	mycli "github.com/jw3/ppc/cli"
+	ppc "github.com/jw3/ppc/cli"
 	"github.com/xujiajun/gorouter"
 	"io/ioutil"
 	"log"
@@ -20,7 +20,7 @@ func main() {
 		log.Fatalf("failed to read clicker configuration: %v", e)
 	}
 
-	cfg := mycli.NewConfiguration()
+	cfg := ppc.NewConfiguration()
 
 	items := make(chan Item)
 	mux := gorouter.New()
@@ -50,6 +50,8 @@ func main() {
 		}
 	}()
 
+	println("ready! http://0.0.0.0:9001")
+
 	http.Handle("/", mux)
 	log.Fatal(http.ListenAndServe(":9001", nil))
 }
@@ -70,24 +72,15 @@ func parseClickerConf() (Cfg, error) {
 }
 
 
-func call(item *Item, cfg *mycli.Config) error {
+func call(item *Item, cfg *ppc.Config) error {
 	for _, m := range item.Modules {
-		uri := fmt.Sprintf("http://%s/devices/%s/", cfg.ApiUri, m.Id)
-
-		if _, e := http.PostForm(uri+"cancel", url.Values{}); e != nil {
-			log.Printf("cancel failed for %v", m.Id)
-			return e
-		}
+		movementCommand := "move" // todo;; externalize
+		endpoint := fmt.Sprintf("http://%s/devices/%s/%s", cfg.ApiUri, m.Id, movementCommand)
 
 		v := url.Values{}
 		v.Set("args", m.Model)
-		if _, e := http.PostForm(uri+"addNodes", v); e != nil {
-			log.Printf("addNodes failed for %v", m.Id)
-			return e
-		}
-
-		if _, e := http.PostForm(uri+"align", url.Values{}); e != nil {
-			log.Printf("align failed for %v", m.Id)
+		if _, e := http.PostForm(endpoint, v); e != nil {
+			log.Printf("move failed for %v", m.Id)
 			return e
 		}
 	}
