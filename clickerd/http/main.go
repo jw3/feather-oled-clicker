@@ -50,10 +50,8 @@ func main() {
 		}
 	}()
 
-	println("ready! http://0.0.0.0:9001")
-
 	http.Handle("/", mux)
-	log.Fatal(http.ListenAndServe(":9001", nil))
+	log.Fatal(http.ListenAndServe(":9000", nil))
 }
 
 
