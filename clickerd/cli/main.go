@@ -2,6 +2,7 @@ package main
 
 import (
 	. "../common"
+	"encoding/json"
 	"fmt"
 	"github.com/go-yaml/yaml"
 	"github.com/urfave/cli"
@@ -157,11 +158,26 @@ func call(item *Item) error {
 		endpoint := fmt.Sprintf("http://%s:%v/v1/devices/%s/%s", cloudHost, cloudPort, m.Id, movementCommand)
 
 		println(endpoint)
-		v := url.Values{}
-		v.Set("args", m.Model)
-		if _, e := http.PostForm(endpoint, v); e != nil {
-			log.Printf("move failed for %v", m.Id)
+		cells := make([]CellZ, 1)
+		e := json.Unmarshal([]byte(m.Model), &cells)
+		if e != nil {
+			log.Printf("failed to unmarshal model %v", m.Id)
 			return e
+		}
+
+		for _, c := range cells {
+			s, e := json.Marshal(c)
+			if e != nil {
+				log.Printf("failed to marshal model %v", m.Id)
+				return e
+			}
+
+			v := url.Values{}
+			v.Set("args", string(s))
+			if _, e := http.PostForm(endpoint, v); e != nil {
+				log.Printf("move failed for %v", m.Id)
+				return e
+			}
 		}
 	}
 	return nil
