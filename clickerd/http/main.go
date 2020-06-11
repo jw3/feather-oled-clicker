@@ -5,12 +5,20 @@ import (
 	"fmt"
 	"github.com/go-yaml/yaml"
 	ppc "github.com/jw3/ppc/cli"
+	"github.com/opentracing/opentracing-go/ext"
 	"github.com/xujiajun/gorouter"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
 	"strconv"
+	opentracing "github.com/opentracing/opentracing-go"
+	"github.com/uber/jaeger-lib/metrics"
+	"strings"
+
+	"github.com/uber/jaeger-client-go"
+	jaegercfg "github.com/uber/jaeger-client-go/config"
+	jaegerlog "github.com/uber/jaeger-client-go/log"
 )
 
 
@@ -21,6 +29,30 @@ func main() {
 	}
 
 	cfg := ppc.NewConfiguration()
+
+	traceCfg := jaegercfg.Configuration{
+		ServiceName: "clicker-http",
+		Sampler:     &jaegercfg.SamplerConfig{
+			Type:  jaeger.SamplerTypeConst,
+			Param: 1,
+		},
+		Reporter:    &jaegercfg.ReporterConfig{
+			LogSpans: true,
+		},
+	}
+
+	jLogger := jaegerlog.StdLogger
+	jMetricsFactory := metrics.NullFactory
+	tracer, closer, err := traceCfg.NewTracer(
+		jaegercfg.Logger(jLogger),
+		jaegercfg.Metrics(jMetricsFactory),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	opentracing.SetGlobalTracer(tracer)
+	defer closer.Close()
 
 	items := make(chan Item)
 	mux := gorouter.New()
@@ -70,14 +102,24 @@ func parseClickerConf() (Cfg, error) {
 }
 
 
-func call(item *Item, cfg *ppc.Config) error {
+func call(item *Item, cfg *ppc.Config, tracer opentracing.Tracer) error {
+	clientSpan := tracer.StartSpan("client")
+	defer clientSpan.Finish()
+
 	for _, m := range item.Modules {
 		movementCommand := "move" // todo;; externalize
 		endpoint := fmt.Sprintf("http://%s/devices/%s/%s", cfg.ApiUri, m.Id, movementCommand)
 
 		v := url.Values{}
 		v.Set("args", m.Model)
-		if _, e := http.PostForm(endpoint, v); e != nil {
+		req, _ := http.NewRequest("POST", endpoint, strings.NewReader(v.Encode()))
+
+		ext.SpanKindRPCClient.Set(clientSpan)
+		ext.HTTPUrl.Set(clientSpan, endpoint)
+		ext.HTTPMethod.Set(clientSpan, "POST")
+		tracer.Inject(clientSpan.Context(), opentracing.HTTPHeaders, opentracing.HTTPHeadersCarrier(req.Header))
+
+		if _, e := http.DefaultClient.Do(req); e != nil {
 			log.Printf("move failed for %v", m.Id)
 			return e
 		}
