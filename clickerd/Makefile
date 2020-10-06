@@ -51,7 +51,7 @@ all-images: clickerd-image
 
 clickerd:
 	env | grep GO
-	go build -v -ldflags '${LDFLAGS}' -o ${DIST_DIR}/clickerd ./cmd/main.go
+	go build -v -ldflags '${LDFLAGS}' -o ${DIST_DIR}/clickerd.${GOOS}.${GOARCH} ./cmd/main.go
 
 cli:
 	env | grep GO
