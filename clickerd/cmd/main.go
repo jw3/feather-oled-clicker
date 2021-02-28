@@ -2,13 +2,15 @@ package main
 
 import (
 	. "../common"
-	"bytes"
+	"encoding/json"
 	"fmt"
 	"github.com/go-yaml/yaml"
 	"github.com/tarm/serial"
 	"io/ioutil"
 	"log"
-	"os/exec"
+	"net/http"
+	"net/url"
+	"os"
 	"strconv"
 	"strings"
 )
@@ -114,30 +116,38 @@ func main() {
 			item := cfg.Items[id]
 			log.Printf("selected model: %v", item.Title)
 
-			binary, binEx := exec.LookPath(cfg.Command)
-			if binEx != nil {
-				log.Printf("command not found: %v", binEx)
-				break
+			_ = call(&item, ppcUri)
+		}
+	}
+}
+
+func call(item *Item, ppcUri string) error {
+	for _, m := range item.Modules {
+		movementCommand := "move" // todo;; externalize
+		endpoint := fmt.Sprintf("http://%s/v1/devices/%s/%s", ppcUri, m.Id, movementCommand)
+
+		println(endpoint)
+		cells := make([]CellZ, 1)
+		e := json.Unmarshal([]byte(m.Model), &cells)
+		if e != nil {
+			log.Printf("failed to unmarshal model %v", m.Id)
+			return e
+		}
+
+		for _, c := range cells {
+			s, e := json.Marshal(c)
+			if e != nil {
+				log.Printf("failed to marshal model %v", m.Id)
+				return e
 			}
 
-
-			for _, m := range item.Modules {
-				args := []string{m.Id, m.Model}
-				log.Printf("%v %v %v", cfg.Command, m.Id, m.Model)
-
-				cmd := exec.Command(binary, args...)
-				var out bytes.Buffer
-				var stderr bytes.Buffer
-				cmd.Stdout = &out
-				cmd.Stderr = &stderr
-
-				e := cmd.Run()
-				if e != nil {
-					log.Printf("failed to run command: %v", e)
-					log.Println(out.String())
-					log.Println(stderr.String())
-				}
+			v := url.Values{}
+			v.Set("args", string(s))
+			if _, e := http.PostForm(endpoint, v); e != nil {
+				log.Printf("move failed for %v", m.Id)
+				return e
 			}
 		}
 	}
+	return nil
 }
