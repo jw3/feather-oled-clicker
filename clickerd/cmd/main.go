@@ -14,7 +14,12 @@ import (
 )
 
 func main() {
-	log.Println("starting clickerd")
+	ppcUri, ok := os.LookupEnv(EnvVarPpcUri)
+	if !ok {
+		ppcUri = DefaultPpcUri
+	}
+
+	log.Println("starting clickerd to ppc @ ", ppcUri)
 
 	// connect to serial; should read from arg
 	c := &serial.Config{Name: "/dev/ttyACM0", Baud: 9600}

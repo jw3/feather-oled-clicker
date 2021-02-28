@@ -22,4 +22,7 @@ type CellZ struct {
 
 const (
 	ClickerdConf = "/usr/local/etc/clickerd.conf"
+
+	EnvVarPpcUri = "PPC_URI"
+	DefaultPpcUri = "localhost:9000"
 )
