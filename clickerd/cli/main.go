@@ -12,11 +12,14 @@ import (
 	"net/url"
 	"os"
 	"strconv"
+	"time"
 )
 
-var cloudHost string
-var cloudPort int
+var cloudHost = "localhost"
+var cloudPort = 9000
 var configFile string
+var cycleRepeat bool
+var cycleLength int64
 
 func main() {
 	app := cli.NewApp()
@@ -68,6 +71,28 @@ func main() {
 					Destination: &cloudPort,
 				}},
 			Action: click,
+		},
+		{
+			Name:        "cycle",
+			Usage:       "Click each item in the list",
+			UsageText:   "clicker cycle",
+			Description: "Show model of item.",
+			Flags: []cli.Flag{
+				&cli.BoolFlag{
+					Name:        "repeat",
+					Value:       false,
+					Usage:       "Repeat the list",
+					Aliases:     []string{"r"},
+					Destination: &cycleRepeat,
+				},
+				&cli.Int64Flag{
+					Name:        "length",
+					Value:       30,
+					Usage:       "Length in seconds",
+					Aliases:     []string{"l"},
+					Destination: &cycleLength,
+				}},
+			Action: cycle,
 		},
 	}
 
@@ -180,5 +205,26 @@ func call(item *Item) error {
 			}
 		}
 	}
+	return nil
+}
+
+func cycle(c *cli.Context) error {
+	cfg, e := parseClickerConf()
+	if e != nil {
+		log.Printf("failed to read clicker configuration")
+		return e
+	}
+
+	for {
+		for idx, item := range cfg.Items {
+			fmt.Printf("\t%v. %v\n", idx+1, item.Title)
+			e = call(&item)
+			time.Sleep(time.Duration(cycleLength) * time.Second)
+		}
+		if !cycleRepeat {
+			break
+		}
+	}
+
 	return nil
 }

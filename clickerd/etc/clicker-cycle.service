@@ -1,0 +1,9 @@
+[Unit]
+Description=Clicker Cycle
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/clicker cycle -l 10 -r
+
+[Install]
+WantedBy=multi-user.target
